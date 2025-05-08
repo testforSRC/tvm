@@ -838,8 +838,12 @@ int RPCEndpoint::ServerAsyncIOEventHandler(const std::string& in_bytes, int even
         writer_.bytes_available());
   }
   ICHECK(code != RPCCode::kReturn && code != RPCCode::kCopyAck);
+  // if the code is kShutdown, return 0 to indicate the server should exit
   if (code == RPCCode::kShutdown) return 0;
+  // if the writer has bytes available, return 2 to indicate the server should send data
+  // usually by calling the handler again
   if (writer_.bytes_available() != 0) return 2;
+  // otherwise, return 1 to indicate the server should and read
   return 1;
 }
 
